@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceClone Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3a;
+    --accent:#7c6af7;--accent2:#4ecdc4;--text:#e8e8f0;--muted:#6b6b82;
+    --danger:#f76a6a;--success:#4ecdc4;
+    --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  .header{border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{font-family:var(--mono);font-size:18px;}.logo span{color:var(--accent);}
+  .badges{display:flex;gap:10px;}
+  .badge{padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--surface);font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .badge.gpu{border-color:var(--accent);color:var(--accent);}
+  .layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 61px);}
+  .sidebar{border-right:1px solid var(--border);padding:22px;overflow-y:auto;background:var(--surface);}
+  .main{padding:32px 40px;overflow-y:auto;}
+  .section-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+  .upload-zone{border:1.5px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;}
+  .upload-zone:hover{border-color:var(--accent);background:rgba(124,106,247,.05);}
+  .upload-zone .icon{font-size:26px;margin-bottom:6px;}
+  .upload-zone strong{display:block;font-size:13px;margin-bottom:3px;}
+  .upload-zone p{font-size:11px;color:var(--muted);}
+  input[type=text]{width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:13px;margin-bottom:10px;}
+  input[type=text]:focus{outline:none;border-color:var(--accent);}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:6px;border:none;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:#fff;width:100%;justify-content:center;margin-bottom:18px;}
+  .btn-primary:hover{background:#9480ff;}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid transparent;padding:4px 8px;font-size:12px;}
+  .btn-danger:hover{border-color:var(--danger);}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);padding:5px 12px;font-size:12px;}
+  .btn-outline:hover{border-color:var(--muted);}
+  .voices-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+  .voice-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s;}
+  .voice-card:hover{border-color:var(--muted);}
+  .voice-card.active{border-color:var(--accent);background:rgba(124,106,247,.08);}
+  .voice-card-name{font-size:13px;font-weight:500;}
+  .voice-card-id{font-family:var(--mono);font-size:10px;color:var(--muted);}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
+  .voice-card.active .dot{background:var(--accent);}
+  hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
+  .page-title{font-family:var(--mono);font-size:22px;margin-bottom:6px;letter-spacing:-1px;}
+  .page-title span{color:var(--accent);}
+  .page-sub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+  .form-label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .options-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+  select{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:14px;appearance:none;cursor:pointer;}
+  select:focus{outline:none;border-color:var(--accent);}
+  textarea{width:100%;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.7;resize:vertical;min-height:200px;margin-bottom:8px;}
+  textarea:focus{outline:none;border-color:var(--accent);}
+  .char-count{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;margin-bottom:20px;}
+  .warn{background:rgba(247,106,106,.08);border:1px solid rgba(247,106,106,.2);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--danger);margin-bottom:18px;display:none;}
+  .warn.show{display:block;}
+  .generate-btn{background:linear-gradient(135deg,var(--accent),#9480ff);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);cursor:pointer;width:100%;transition:all .2s;}
+  .generate-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,106,247,.3);}
+  .generate-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;transform:none;box-shadow:none;}
+  .progress-wrap{display:none;margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .progress-wrap.show{display:block;}
+  .progress-label{display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;}
+  .progress-pct{font-family:var(--mono);color:var(--accent);}
+  .bar-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s;width:0%;}
+  .result-card{display:none;margin-top:20px;background:var(--surface);border:1px solid var(--success);border-radius:10px;padding:20px;}
+  .result-card.show{display:block;}
+  .result-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--success);margin-bottom:14px;}
+  audio{width:100%;margin-bottom:14px;}
+  .btn-dl{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px 22px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);}
+  .history{margin-top:36px;}
+  .history-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+  .history-text{flex:1;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .history-lang{font-family:var(--mono);font-size:10px;color:var(--accent);flex-shrink:0;}
+  .empty{text-align:center;padding:24px;color:var(--muted);font-size:13px;}
+  .empty-icon{font-size:28px;margin-bottom:8px;opacity:.5;}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">voice<span>clone</span>.studio</div>
+  <div class="badges">
+    <span id="ram-badge" class="badge">RAM: --</span>
+    <span id="device-badge" class="badge">--</span>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="section-label">Voice Profiles</div>
+    <div class="upload-zone" onclick="document.getElementById('vfile').click()">
+      <div class="icon">🎙</div>
+      <strong id="upload-fname">Click to select audio</strong>
+      <p>.wav / .mp3 · 10–30 seconds</p>
+    </div>
+    <input type="file" id="vfile" accept=".wav,.mp3,.m4a,.ogg" style="display:none" onchange="fileSelected(this)">
+    <input type="text" id="vname" placeholder="Give it a name (e.g. My Voice)">
+    <button class="btn btn-primary" onclick="uploadVoice()">+ Save Voice Profile</button>
+
+    <div class="voices-list" id="voices-list">
+      <div class="empty"><div class="empty-icon">🎭</div>No voices yet</div>
+    </div>
+
+    <hr>
+    <div class="section-label">Selected</div>
+    <div id="selected-display" style="font-size:12px;color:var(--muted);font-family:var(--mono)">none</div>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Clone <span>Any Voice</span></div>
+    <div class="page-sub">Upload a voice sample → paste script → download audio</div>
+
+    <div class="warn" id="warn">Please select a voice profile from the sidebar first</div>
+
+    <div class="options-row">
+      <div>
+        <label class="form-label">Language</label>
+        <select id="language"></select>
+      </div>
+      <div>
+        <label class="form-label">Output Format</label>
+        <select><option>WAV (lossless)</option></select>
+      </div>
+    </div>
+
+    <label class="form-label">Script / Text</label>
+    <textarea id="script" placeholder="Yahan apna YouTube script paste karein...
+
+Hindi aur English dono kaam karte hain. Pura script ek baar mein paste kar sakte hain." oninput="updateCount()"></textarea>
+    <div class="char-count" id="char-count">0 characters · ~0 min</div>
+
+    <button class="generate-btn" id="gen-btn" onclick="generate()">Generate Cloned Audio</button>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-status">Loading model (first time takes 2-3 min)...</span>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-fill"></div></div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="result-title">✓ CLONING COMPLETE — READY TO DOWNLOAD</div>
+      <audio id="result-audio" controls></audio>
+      <button class="btn-dl" onclick="downloadAudio()">⬇ Download WAV</button>
+    </div>
+
+    <div class="history" id="history-section" style="display:none">
+      <div class="section-label">Recent Outputs</div>
+      <div id="history-list"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+let selectedVoice = null;
+let currentJobId = null;
+let pollInterval = null;
+let history = [];
+
+async function loadSystem() {
+  try {
+    const d = await (await fetch('/api/system')).json();
+    document.getElementById('ram-badge').textContent = `RAM: ${d.ram_used}/${d.ram_total}GB`;
+    const db = document.getElementById('device-badge');
+    if (d.device === 'cuda') { db.textContent = 'GPU'; db.classList.add('gpu'); }
+    else db.textContent = 'CPU mode';
+  } catch(e) {}
+}
+
+async function loadLanguages() {
+  const langs = await (await fetch('/api/languages')).json();
+  const sel = document.getElementById('language');
+  sel.innerHTML = langs.map(l => `<option value="${l.id}" ${l.id==='hi'?'selected':''}>${l.name}</option>`).join('');
+}
+
+async function loadVoices() {
+  const voices = await (await fetch('/api/voices')).json();
+  const list = document.getElementById('voices-list');
+  if (!voices.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🎭</div>No voices yet</div>';
+    return;
+  }
+  list.innerHTML = voices.map(v => `
+    <div class="voice-card ${selectedVoice===v.id?'active':''}" onclick="selectVoice('${v.id}','${v.name}',this)">
+      <div><div class="voice-card-name">${v.name}</div><div class="voice-card-id">#${v.id}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="dot"></div>
+        <button class="btn-danger" onclick="event.stopPropagation();deleteVoice('${v.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function fileSelected(input) {
+  if (input.files[0]) document.getElementById('upload-fname').textContent = input.files[0].name;
+}
+
+function selectVoice(id, name, el) {
+  selectedVoice = id;
+  document.getElementById('selected-display').textContent = `${name} (#${id})`;
+  document.getElementById('warn').classList.remove('show');
+  document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function uploadVoice() {
+  const file = document.getElementById('vfile').files[0];
+  if (!file) { alert('Select an audio file first'); return; }
+  const name = document.getElementById('vname').value.trim() || 'Voice';
+  const fd = new FormData();
+  fd.append('file', file); fd.append('name', name);
+  await fetch('/api/voices', { method: 'POST', body: fd });
+  document.getElementById('vname').value = '';
+  document.getElementById('vfile').value = '';
+  document.getElementById('upload-fname').textContent = 'Click to select audio';
+  loadVoices();
+}
+
+async function deleteVoice(id) {
+  if (selectedVoice === id) { selectedVoice = null; document.getElementById('selected-display').textContent = 'none'; }
+  await fetch(`/api/voices/${id}`, { method: 'DELETE' });
+  loadVoices();
+}
+
+function updateCount() {
+  const text = document.getElementById('script').value;
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const mins = Math.round(words / 150 * 10) / 10;
+  document.getElementById('char-count').textContent = `${text.length.toLocaleString()} characters · ~${mins} min audio`;
+}
+
+async function generate() {
+  const text = document.getElementById('script').value.trim();
+  if (!text) { alert('Script enter karein pehle'); return; }
+  if (!selectedVoice) { document.getElementById('warn').classList.add('show'); return; }
+  const language = document.getElementById('language').value;
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('progress-wrap').classList.add('show');
+  document.getElementById('bar-fill').style.width = '5%';
+  document.getElementById('progress-pct').textContent = '5%';
+  document.getElementById('progress-status').textContent = 'Loading model (first time: 2-3 min)...';
+
+  const r = await fetch('/api/generate', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ text, voice_id: selectedVoice, language })
+  });
+  const d = await r.json();
+  if (d.error) { alert(d.error); resetBtn(); return; }
+  currentJobId = d.job_id;
+  pollInterval = setInterval(pollJob, 1500);
+}
+
+async function pollJob() {
+  const d = await (await fetch(`/api/job/${currentJobId}`)).json();
+  const pct = d.progress || 0;
+  document.getElementById('bar-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  const map = { queued:'Waiting...', processing:'Cloning voice...', done:'Done!', error:'Error' };
+  document.getElementById('progress-status').textContent = map[d.status] || d.status;
+  if (d.status === 'done') { clearInterval(pollInterval); showResult(); }
+  else if (d.status === 'error') { clearInterval(pollInterval); alert('Error: ' + d.error); resetBtn(); }
+}
+
+function showResult() {
+  document.getElementById('result-card').classList.add('show');
+  document.getElementById('result-audio').src = `/api/download/${currentJobId}`;
+  const text = document.getElementById('script').value.trim();
+  const lang = document.getElementById('language').options[document.getElementById('language').selectedIndex].text;
+  history.unshift({ jobId: currentJobId, text: text.slice(0,70), lang });
+  renderHistory();
+  resetBtn();
+}
+
+function resetBtn() {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = false; btn.textContent = 'Generate Cloned Audio';
+}
+
+function downloadAudio() {
+  const a = document.createElement('a');
+  a.href = `/api/download/${currentJobId}`;
+  a.download = `cloned_${currentJobId}.wav`;
+  a.click();
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  document.getElementById('history-section').style.display = 'block';
+  document.getElementById('history-list').innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-lang">${h.lang}</span>
+      <span class="history-text">${h.text}...</span>
+      <a href="/api/download/${h.jobId}" download class="btn-outline">⬇</a>
+    </div>`).join('');
+}
+
+loadSystem(); loadLanguages(); loadVoices();
+</script>
+</body>
+</html>

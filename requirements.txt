@@ -1,0 +1,6 @@
+coqui-tts
+transformers==4.46.1
+flask
+psutil
+torch
+torchaudio
