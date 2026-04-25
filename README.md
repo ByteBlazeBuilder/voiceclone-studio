@@ -37,7 +37,7 @@ VoiceClone Studio is a **local web app** that lets you clone any voice using jus
 
 ### Step 1 — Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/voiceclone-studio.git
+git clone https://github.com/ByteBlazeBuilder/voiceclone-studio.git
 cd voiceclone-studio
 ```
 
